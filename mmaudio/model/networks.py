@@ -227,7 +227,10 @@ class MMAudio(nn.Module):
         i.e., the features are reused over steps during inference
         """
         assert clip_f.shape[1] == self._clip_seq_len, f'{clip_f.shape=} {self._clip_seq_len=}'
-        assert sync_f.shape[1] == self._sync_seq_len, f'{sync_f.shape=} {self._sync_seq_len=}'
+        if self._sync_seq_len == 0:
+            self._sync_seq_len = sync_f.shape[1]
+        else:
+            assert sync_f.shape[1] == self._sync_seq_len, f'{sync_f.shape=} {self._sync_seq_len=}'
         assert text_f.shape[1] == self._text_seq_len, f'{text_f.shape=} {self._text_seq_len=}'
 
         bs = clip_f.shape[0]

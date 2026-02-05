@@ -105,10 +105,19 @@ class FeaturesUtils(nn.Module):
         # partition the video
         segment_size = 16
         step_size = 8
+        if t < segment_size:
+            pad = segment_size - t
+            pad_frames = x[:, -1:].repeat(1, pad, 1, 1, 1)
+            x = torch.cat([x, pad_frames], dim=1)
+            t = segment_size
+
         num_segments = (t - segment_size) // step_size + 1
         segments = []
-        for i in range(num_segments):
-            segments.append(x[:, i * step_size:i * step_size + segment_size])
+        if num_segments <= 0:
+            segments.append(x[:, :segment_size])
+        else:
+            for i in range(num_segments):
+                segments.append(x[:, i * step_size:i * step_size + segment_size])
         x = torch.stack(segments, dim=1)  # (B, S, T, C, H, W)
 
         outputs = []
